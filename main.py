@@ -6,36 +6,89 @@ from class_job_files import JobFiles
 
 bot = telebot.TeleBot('5859808636:AAFmC9v8iOpYIV7CuY5HWwbqJBMzFTw4kpo')
 
+keyword_vacancy = ''
+country = ''
+top_n = 1
+salary_range = '0-200000'
+
 
 @bot.message_handler(commands=['start'])
-def hello(message):
-    # button = types.InlineKeyboardMarkup()
-    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}!\nВведите ключевое слово для поиска вакансии')
-    # bot.send_message(message.chat.id, message)
+def start(message):
+    bot.send_message(message.chat.id, 'Введите ключевое слово для поиска вакансии: ')
+    bot.register_next_step_handler(message, get_keyword)
+
+
+def get_keyword(message):
+    global keyword_vacancy
+    keyword_vacancy = message.text.lower
+    bot.send_message(message.chat.id, 'Введите в каком городе искать вакансии: ')
+    bot.register_next_step_handler(message, get_country)
+    return keyword_vacancy
+
+
+def get_country(message):
+    global country
+    country = message.text.capitalize()
+    bot.send_message(message.chat.id, 'Введите кол-во вакансий для вывода в топ: ')
+    bot.register_next_step_handler(message, get_top_n)
+    return country
+
+
+def get_top_n(message):
+    global top_n
+    top_n = int(message.text)
+    bot.send_message(message.chat.id, 'Введите диапазон зарплат(Пример: 100000-150000): ')
+    bot.register_next_step_handler(message, get_salary_range)
+    return top_n
+
+
+def get_salary_range(message):
+    global salary_range
+    salary_range = message.text
+    # bot.register_next_step_handler(message, user_interaction(message, keyword_vacancy, country, top_n, salary_range))
+    bot.register_next_step_handler(message, user_interaction)
+    return salary_range
+
+
+# @bot.message_handler(commands=['start'])
+# def hello(message):
+#     button = types.ReplyKeyboardMarkup()
+#     but1 = types.KeyboardButton('Поиск вакансий')
+#     button.row(but1)
+#     bot.send_message(message.chat.id,
+#                      f'Здравствуйте, {message.from_user.first_name}!', reply_markup=button)
+#     # bot.send_message(message.chat.id, message) \nВведите ключевое слово для поиска вакансии
+#     bot.register_next_step_handler(message, on_click)
+#
+#
+# def on_click(message):
+#     if message.text == 'Поиск вакансий':
+#         # keyword_vacancy = message.text
+#         bot.send_message(message.chat.id, 'Выбери город для поиска вакансий')
+#         bot.register_next_step_handler()
+#     # return keyword_vacancy
 
 
 # @bot.message_handler()
-# def info(message):
-#     if message.text.lower() == 'id':
-#         bot.reply_to(message, f'ID: {message.from_user.id}')
-
-
-@bot.message_handler()
 def user_interaction(message):
     """
     Функция для взаимодействия с пользователем
     """
     # Создание экземпляра класса для работы с API сайта HeadHunter
     head_hunter_api = HH()
-
+    global keyword_vacancy
+    global country
+    global top_n
+    global salary_range
     # Запрашиваем у пользователя параметры для поиска и обработки списка вакансий
-    keyword = message.text.lower()
-    country = 'Барнаул'
+    # keyword = keyword_vacancy.text.lower()
+    keyword = keyword_vacancy
+    # country = 'Барнаул'
     # country = input('Введите в каком городе искать вакансии: ').capitalize()
     # top_n = int(input('Введите кол-во вакансий для вывода в топ: '))
-    top_n = 3
+    # top_n = 3
     # salary_range = input('Введите диапазон зарплат(Пример: 100000-150000): ')
-    salary_range = '0-200000'
+    # salary_range = '0-200000'
 
     # Загрузка словаря городов из файла в формате JSON
     city = JobFiles.load_files('country.json')
