@@ -1,23 +1,23 @@
 import telebot
 from telebot import types
+from class_headhunter_api import HH
+from class_job_vacancies import JobVacancy
+from class_job_files import JobFiles
 
 bot = telebot.TeleBot('5859808636:AAFmC9v8iOpYIV7CuY5HWwbqJBMzFTw4kpo')
 
-# @bot.message_handler(commands=['start'])
-# def main(message):
-#     button = types.InlineKeyboardMarkup()
-#     bot.send_message(message.chat.id, 'Hello')
+
+@bot.message_handler(commands=['start'])
+def hello(message):
+    # button = types.InlineKeyboardMarkup()
+    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}!\nВведите ключевое слово для поиска вакансии')
+    # bot.send_message(message.chat.id, message)
 
 
 # @bot.message_handler()
 # def info(message):
 #     if message.text.lower() == 'id':
 #         bot.reply_to(message, f'ID: {message.from_user.id}')
-
-
-from class_headhunter_api import HH
-from class_job_vacancies import JobVacancy
-from class_job_files import JobFiles
 
 
 @bot.message_handler()
@@ -35,7 +35,7 @@ def user_interaction(message):
     # top_n = int(input('Введите кол-во вакансий для вывода в топ: '))
     top_n = 3
     # salary_range = input('Введите диапазон зарплат(Пример: 100000-150000): ')
-    salary_range = '0-300000'
+    salary_range = '0-200000'
 
     # Загрузка словаря городов из файла в формате JSON
     city = JobFiles.load_files('country.json')
@@ -59,4 +59,4 @@ def user_interaction(message):
 #     user_interaction()
 
 
-bot.polling(none_stop=True)
+bot.infinity_polling()

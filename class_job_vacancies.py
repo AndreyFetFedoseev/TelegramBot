@@ -98,16 +98,17 @@ class JobVacancy:
         :return: Отображение вакансий
         """
         i = 1
-        b = (f'Всего найдено вакансий: {JobVacancy.count_vacancies}; '
-              f'Кол-во вакансий удовлетворяющих диапазону зарплаты: {len(list_selection_vacancies)}')
+        b = (f'Всего найдено вакансий: {JobVacancy.count_vacancies};\n'
+             f'Кол-во вакансий удовлетворяющих диапазону зарплаты: {len(list_selection_vacancies)}\n\n\n')
         for vacancy in list_vacancies:
-            d = ('__________________________________________________________________________________________________')
+            # d = ('__________________________________________________________________________________________________')
             # input(f'Перейти к {i} вакансии')
+
+            c = (f'Вакансия №{i}:\n'
+                 f'Название вакансии: {vacancy.name};\nРаботодатель: {vacancy.employer};\n'
+                 f'Уровень зарплаты до {vacancy.salary} руб.;\n'
+                 f'Требования: {vacancy.snippet}\nСсылка на вакансию: {vacancy.url}\n\n\n'
+                 )
             i += 1
-            c = (
-                f'Название вакансии: {vacancy.name}; Работодатель: {vacancy.employer}; '
-                f'Уровень зарплаты: {vacancy.salary}\n'
-                f'Требования: {vacancy.snippet}\nСсылка на вакансию: {vacancy.url}'
-            )
-            b += d + c
+            b += c
         return b
