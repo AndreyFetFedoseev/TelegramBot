@@ -106,7 +106,7 @@ class JobVacancy:
 
             c = (f'Вакансия №{i}:\n'
                  f'Название вакансии: {vacancy.name};\nРаботодатель: {vacancy.employer};\n'
-                 f'Уровень зарплаты до {vacancy.salary} руб.;\n'
+                 f'Уровень зарплаты {vacancy.salary} руб.;\n'
                  f'Требования: {vacancy.snippet}\nСсылка на вакансию: {vacancy.url}\n\n\n'
                  )
             i += 1

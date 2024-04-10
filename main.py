@@ -11,10 +11,15 @@ country = ''
 top_n = 1
 salary_range = '0-200000'
 
+# Загрузка словаря городов из файла в формате JSON
+city = JobFiles.load_files('country.json')
 
+
+# Запрашиваем у пользователя параметры для поиска и обработки списка вакансий
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}!\nВведите ключевое слово для поиска вакансии: ')
+    bot.send_message(message.chat.id,
+                     f'Здравствуйте, {message.from_user.first_name}!\nВведите ключевое слово для поиска вакансии: ')
     bot.register_next_step_handler(message, get_keyword)
 
 
@@ -28,84 +33,63 @@ def get_keyword(message):
 
 def get_country(message):
     global country
+    global city
     country = message.text.capitalize()
-    bot.send_message(message.chat.id, 'Введите кол-во вакансий для вывода в топ: ')
-    bot.register_next_step_handler(message, get_top_n)
-    return country
+    try:
+        if city[country]:
+            bot.send_message(message.chat.id, 'Введите кол-во вакансий для вывода в топ: ')
+            bot.register_next_step_handler(message, get_top_n)
+        return country
+    except KeyError:
+        bot.send_message(message.chat.id, f'Такого города нет.\nВведите в каком городе искать вакансии: ')
+        bot.register_next_step_handler(message, get_country)
 
 
 def get_top_n(message):
     global top_n
-    top_n = int(message.text)
-    bot.send_message(message.chat.id, 'Введите диапазон зарплат(Пример: 100000-150000): ')
-    bot.register_next_step_handler(message, get_salary_range)
-    return top_n
-
-
-# def get_salary_range(message):
-#     global keyword_vacancy
-#     global country
-#     global top_n
-#     global salary_range
-#     print(country)
-#     print(top_n)
-#     print(keyword_vacancy)
+    try:
+        top_n = int(message.text)
+        bot.send_message(message.chat.id, 'Введите диапазон зарплат(Пример: 100000-150000): ')
+        bot.register_next_step_handler(message, get_salary_range)
+        return top_n
+    except ValueError:
+        bot.send_message(message.chat.id, 'Необходимо ввести число.\nВведите кол-во вакансий для вывода в топ: ')
+        bot.register_next_step_handler(message, get_top_n)
 
 
 def get_salary_range(message):
     global salary_range
     salary_range = message.text
-    # bot.register_next_step_handler(message, user_interaction(message, keyword_vacancy, country, top_n, salary_range))
-    bot.send_message(message.chat.id, 'Для поиска введите "Z"')
-    bot.register_next_step_handler(message, user_interaction)
-    return salary_range
+    try:
+        if len([x for x in salary_range.split('-') if int(x) >= 0]) == 2:
+            bot.send_message(message.chat.id, 'Для поиска введите "Z"')
+            bot.register_next_step_handler(message, user_interaction)
+            return salary_range
+        else:
+            bot.send_message(message.chat.id,
+                             f'Неверно введен диапазон.\nВведите диапазон зарплат(Пример: 100000-150000): ')
+            bot.register_next_step_handler(message, get_salary_range)
+    except ValueError:
+        bot.send_message(message.chat.id,
+                         f'Неверно введен диапазон.\nВведите диапазон зарплат(Пример: 100000-150000): ')
+        bot.register_next_step_handler(message, get_salary_range)
 
 
-# @bot.message_handler(commands=['start'])
-# def hello(message):
-#     button = types.ReplyKeyboardMarkup()
-#     but1 = types.KeyboardButton('Поиск вакансий')
-#     button.row(but1)
-#     bot.send_message(message.chat.id,
-#                      f'Здравствуйте, {message.from_user.first_name}!', reply_markup=button)
-#     # bot.send_message(message.chat.id, message) \nВведите ключевое слово для поиска вакансии
-#     bot.register_next_step_handler(message, on_click)
-#
-#
-# def on_click(message):
-#     if message.text == 'Поиск вакансий':
-#         # keyword_vacancy = message.text
-#         bot.send_message(message.chat.id, 'Выбери город для поиска вакансий')
-#         bot.register_next_step_handler()
-#     # return keyword_vacancy
-
-
-# @bot.message_handler()
 def user_interaction(message):
     """
     Функция для взаимодействия с пользователем
     """
-    # Создание экземпляра класса для работы с API сайта HeadHunter
-    head_hunter_api = HH()
     global keyword_vacancy
     global country
     global top_n
     global salary_range
-    # Запрашиваем у пользователя параметры для поиска и обработки списка вакансий
-    # keyword = keyword_vacancy.text.lower()
-    keyword = keyword_vacancy
-    # country = 'Барнаул'
-    # country = input('Введите в каком городе искать вакансии: ').capitalize()
-    # top_n = int(input('Введите кол-во вакансий для вывода в топ: '))
-    # top_n = 3
-    # salary_range = input('Введите диапазон зарплат(Пример: 100000-150000): ')
-    # salary_range = '0-200000'
+    global city
 
-    # Загрузка словаря городов из файла в формате JSON
-    city = JobFiles.load_files('country.json')
+    # Создание экземпляра класса для работы с API сайта HeadHunter
+    head_hunter_api = HH()
 
     # Получение вакансий с hh.ru в формате JSON
-    head_hunter_api.load_vacancies(keyword, city[country])
+    head_hunter_api.load_vacancies(keyword_vacancy, city[country])
 
     # Сохранение списка вакансий с определенного города в json файл
     JobFiles.save_vacancies('data_vacancies.json', head_hunter_api.vacancies)
@@ -118,10 +102,6 @@ def user_interaction(message):
     print(a)
     bot.send_message(message.chat.id, a)
     JobVacancy.count_vacancies = 0
-
-
-# if __name__ == "__main__":
-#     user_interaction()
 
 
 bot.infinity_polling()
