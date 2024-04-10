@@ -14,13 +14,13 @@ salary_range = '0-200000'
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, 'Введите ключевое слово для поиска вакансии: ')
+    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}!\nВведите ключевое слово для поиска вакансии: ')
     bot.register_next_step_handler(message, get_keyword)
 
 
 def get_keyword(message):
     global keyword_vacancy
-    keyword_vacancy = message.text.lower
+    keyword_vacancy = message.text.lower()
     bot.send_message(message.chat.id, 'Введите в каком городе искать вакансии: ')
     bot.register_next_step_handler(message, get_country)
     return keyword_vacancy
@@ -42,10 +42,21 @@ def get_top_n(message):
     return top_n
 
 
+# def get_salary_range(message):
+#     global keyword_vacancy
+#     global country
+#     global top_n
+#     global salary_range
+#     print(country)
+#     print(top_n)
+#     print(keyword_vacancy)
+
+
 def get_salary_range(message):
     global salary_range
     salary_range = message.text
     # bot.register_next_step_handler(message, user_interaction(message, keyword_vacancy, country, top_n, salary_range))
+    bot.send_message(message.chat.id, 'Для поиска введите "Z"')
     bot.register_next_step_handler(message, user_interaction)
     return salary_range
 
@@ -106,6 +117,7 @@ def user_interaction(message):
     a = JobVacancy.print_top_vacancies(sort_top_vacancies, selection_vacancies_by_salary)
     print(a)
     bot.send_message(message.chat.id, a)
+    JobVacancy.count_vacancies = 0
 
 
 # if __name__ == "__main__":
