@@ -16,7 +16,7 @@ city = JobFiles.load_files('country.json')
 
 
 # Запрашиваем у пользователя параметры для поиска и обработки списка вакансий
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'Следующий запрос'])
 def start(message):
     bot.send_message(message.chat.id,
                      f'Здравствуйте, {message.from_user.first_name}!\nВведите ключевое слово для поиска вакансии: ')
@@ -62,8 +62,11 @@ def get_salary_range(message):
     salary_range = message.text
     try:
         if len([x for x in salary_range.split('-') if int(x) >= 0]) == 2:
-            bot.send_message(message.chat.id, 'Для поиска введите "Z"')
-            bot.register_next_step_handler(message, user_interaction)
+            button1 = types.InlineKeyboardMarkup()
+            btn1 = types.InlineKeyboardButton('Поиск', callback_data=user_interaction(message))
+            button1.row(btn1)
+            bot.send_message(message.chat.id, 'Для поиска нажми кнопку', reply_markup=button1)
+            # bot.register_next_step_handler(message, user_interaction)
             return salary_range
         else:
             bot.send_message(message.chat.id,
@@ -100,8 +103,13 @@ def user_interaction(message):
     sort_top_vacancies = JobVacancy.sorted_top_vacancy(selection_vacancies_by_salary, top_n)
     a = JobVacancy.print_top_vacancies(sort_top_vacancies, selection_vacancies_by_salary)
     print(a)
-    bot.send_message(message.chat.id, a)
+    # bot.send_message(message.chat.id, a)
     JobVacancy.count_vacancies = 0
+    button = types.ReplyKeyboardMarkup()
+    btn2 = types.KeyboardButton('Следующий запрос')
+    button.row(btn2)
+    bot.send_message(message.chat.id, a, reply_markup=button)
+    bot.register_next_step_handler(message, start)
 
 
 bot.infinity_polling()
