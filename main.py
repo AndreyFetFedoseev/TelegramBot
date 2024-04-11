@@ -1,10 +1,14 @@
 import telebot
 from telebot import types
+from telebot import util
+
 from class_headhunter_api import HH
 from class_job_vacancies import JobVacancy
 from class_job_files import JobFiles
 
-bot = telebot.TeleBot('5859808636:AAFmC9v8iOpYIV7CuY5HWwbqJBMzFTw4kpo')
+from config import TOKEN
+
+bot = telebot.TeleBot(TOKEN)
 
 keyword_vacancy = ''
 country = ''
@@ -16,7 +20,7 @@ city = JobFiles.load_files('country.json')
 
 
 # Запрашиваем у пользователя параметры для поиска и обработки списка вакансий
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'Следующий запрос'])
 def start(message):
     bot.send_message(message.chat.id,
                      f'Здравствуйте, {message.from_user.first_name}!\nВведите ключевое слово для поиска вакансии: ')
@@ -62,8 +66,7 @@ def get_salary_range(message):
     salary_range = message.text
     try:
         if len([x for x in salary_range.split('-') if int(x) >= 0]) == 2:
-            bot.send_message(message.chat.id, 'Для поиска введите "Z"')
-            bot.register_next_step_handler(message, user_interaction)
+            user_interaction(message)
             return salary_range
         else:
             bot.send_message(message.chat.id,
@@ -98,10 +101,15 @@ def user_interaction(message):
     list_vacancies = JobVacancy.get_list_vacancy('data_vacancies.json')
     selection_vacancies_by_salary = JobVacancy.selection_of_vacancies(list_vacancies, salary_range)
     sort_top_vacancies = JobVacancy.sorted_top_vacancy(selection_vacancies_by_salary, top_n)
-    a = JobVacancy.print_top_vacancies(sort_top_vacancies, selection_vacancies_by_salary)
-    print(a)
-    bot.send_message(message.chat.id, a)
+    vacancy = JobVacancy.print_top_vacancies(sort_top_vacancies, selection_vacancies_by_salary)
+    print(vacancy)
     JobVacancy.count_vacancies = 0
+    button = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    btn2 = types.KeyboardButton('Следующий запрос')
+    button.row(btn2)
+    for mes in util.smart_split(vacancy, 10000):
+        bot.send_message(message.chat.id, mes, reply_markup=button)
+    bot.register_next_step_handler(message, start)
 
 
 bot.infinity_polling()
