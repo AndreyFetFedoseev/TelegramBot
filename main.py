@@ -103,8 +103,8 @@ def user_interaction(message):
     selection_vacancies_by_salary = JobVacancy.selection_of_vacancies(list_vacancies, salary_range)
     sort_top_vacancies = JobVacancy.sorted_top_vacancy(selection_vacancies_by_salary, top_n)
     vacancy = JobVacancy.print_top_vacancies(sort_top_vacancies, selection_vacancies_by_salary)
-    print(vacancy)
     JobVacancy.count_vacancies = 0
+
     button = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     btn2 = types.KeyboardButton('Следующий запрос')
     button.row(btn2)
