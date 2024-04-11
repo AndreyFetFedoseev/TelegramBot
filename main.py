@@ -1,10 +1,14 @@
 import telebot
 from telebot import types
+from telebot import util
+
 from class_headhunter_api import HH
 from class_job_vacancies import JobVacancy
 from class_job_files import JobFiles
 
-bot = telebot.TeleBot('5859808636:AAFmC9v8iOpYIV7CuY5HWwbqJBMzFTw4kpo')
+from config import TOKEN
+
+bot = telebot.TeleBot(TOKEN)
 
 keyword_vacancy = ''
 country = ''
@@ -62,11 +66,7 @@ def get_salary_range(message):
     salary_range = message.text
     try:
         if len([x for x in salary_range.split('-') if int(x) >= 0]) == 2:
-            button1 = types.InlineKeyboardMarkup()
-            btn1 = types.InlineKeyboardButton('Поиск', callback_data=user_interaction(message))
-            button1.row(btn1)
-            bot.send_message(message.chat.id, 'Для поиска нажми кнопку', reply_markup=button1)
-            # bot.register_next_step_handler(message, user_interaction)
+            user_interaction(message)
             return salary_range
         else:
             bot.send_message(message.chat.id,
@@ -101,14 +101,14 @@ def user_interaction(message):
     list_vacancies = JobVacancy.get_list_vacancy('data_vacancies.json')
     selection_vacancies_by_salary = JobVacancy.selection_of_vacancies(list_vacancies, salary_range)
     sort_top_vacancies = JobVacancy.sorted_top_vacancy(selection_vacancies_by_salary, top_n)
-    a = JobVacancy.print_top_vacancies(sort_top_vacancies, selection_vacancies_by_salary)
-    print(a)
-    # bot.send_message(message.chat.id, a)
+    vacancy = JobVacancy.print_top_vacancies(sort_top_vacancies, selection_vacancies_by_salary)
+    print(vacancy)
     JobVacancy.count_vacancies = 0
-    button = types.ReplyKeyboardMarkup()
+    button = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     btn2 = types.KeyboardButton('Следующий запрос')
     button.row(btn2)
-    bot.send_message(message.chat.id, a, reply_markup=button)
+    for mes in util.smart_split(vacancy, 10000):
+        bot.send_message(message.chat.id, mes, reply_markup=button)
     bot.register_next_step_handler(message, start)
 
 
