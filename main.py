@@ -6,8 +6,9 @@ from class_headhunter_api import HH
 from class_job_vacancies import JobVacancy
 from class_job_files import JobFiles
 
-from config import TOKEN
+import os
 
+TOKEN = os.environ.get('TELEGRAM_TOKEN')
 bot = telebot.TeleBot(TOKEN)
 
 keyword_vacancy = ''
